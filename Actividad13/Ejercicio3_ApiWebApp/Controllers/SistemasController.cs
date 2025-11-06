@@ -18,13 +18,13 @@ public class SistemasController : ControllerBase
         
         try
         {
-            using (var stream = new MemoryStream())
-            {
-                await file.CopyToAsync(stream);
-                stream.Position = 0;
-                MiEmpresa.Descargar(stream);
-                return Ok("Archivo procesado correctamente");
-            }
+            //using Stream stream = new MemoryStream();
+            //await file.CopyToAsync(stream);
+            //stream.Position = 0;
+            // MiEmpresa.Descargar(stream);
+            
+            MiEmpresa.Descargar(file.OpenReadStream());
+            return Ok("Archivo procesado correctamente");
         }
         catch (Exception ex)
         {
