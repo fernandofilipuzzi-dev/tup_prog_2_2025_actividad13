@@ -31,7 +31,15 @@ public class SistemasController : ControllerBase
             $"Error al procesar el archivo: {ex.Message}");
         }
     }
+       
+    [HttpGet("listaPaquetes")]
+    public ActionResult<List<Paquete>> GetListaPaquetes()
+    {
+        if (MiEmpresa.listaPaquetes == null || MiEmpresa.listaPaquetes.Count == 0)
+            return NotFound("No hay paquetes");
 
+        return Ok(MiEmpresa.listaPaquetes);
+    }
 
     [HttpGet("CamionesCargados")]
     public ActionResult<string[]> GetCamionesCargados()
@@ -44,20 +52,12 @@ public class SistemasController : ControllerBase
         return Ok(camiones);
     }
 
-        
-    [HttpGet("listaPaquetes")]
-    public ActionResult<List<Paquete>> GetListaPaquetes()
-    {
-        if (MiEmpresa.listaPaquetes == null || MiEmpresa.listaPaquetes.Count == 0)
-            return NotFound("No hay paquetes");
-
-        return Ok(MiEmpresa.listaPaquetes);
-    }
-
-
     [HttpGet("VerCargaCamion")]
     public ActionResult<List<Paquete>> GetVerCarga(int posicion)
     {
+        if (posicion <= 0)
+            return BadRequest("posicion de camión es requerido");
+
         string[] paquetes = MiEmpresa.VerCargaCamion(posicion);
 
         if (paquetes == null || paquetes.Length == 0) return NotFound("No hay paquetes");
@@ -70,6 +70,9 @@ public class SistemasController : ControllerBase
     {
         try
         {
+            if (posicion <= 0)
+                return BadRequest("Número de camión es requerido");
+
             Paquete paquete = null;
 
             paquete = BuscarPaquete("3");
@@ -88,27 +91,31 @@ public class SistemasController : ControllerBase
     }
 
     [HttpGet("QuitarPaqueteDelCamion")]
-    public ActionResult<double> QuitarPaquete(int nroCamion)
+    public ActionResult<double> QuitarPaquete(int posicion)
     {
-        Paquete paquete = null;
+        if (posicion <= 0)
+            return BadRequest("posicion de camión es requerido");
 
-        double pesoCamion = MiEmpresa.RetirarPaquete(nroCamion);
+        double pesoCamion = MiEmpresa.RetirarPaquete(posicion);
 
         return Ok(pesoCamion);
     }
 
     [HttpGet("EnviarCamion")]
-    public async Task<IActionResult> GetEnviarCamion(int nroCamion)
+    public async Task<IActionResult> GetEnviarCamion(int posicion)
     {
         try
         {
+            if (posicion <= 0)
+                return BadRequest("posicion de camión es requerido");
+
             using MemoryStream stream = new MemoryStream();
 
-            MiEmpresa.RetirarCamion(stream, nroCamion);
+            MiEmpresa.RetirarCamion(stream, posicion);
 
             byte[] fileContents = stream.ToArray();
 
-            return File(fileContents, "text/csv", $"camion_{nroCamion}.csv");
+            return File(fileContents, "text/csv", $"camion_{posicion}.csv");
         }
         catch (Exception ex)
         {
